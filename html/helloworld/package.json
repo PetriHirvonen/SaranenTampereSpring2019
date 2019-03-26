@@ -1,0 +1,19 @@
+{
+  "name": "helloworld",
+  "version": "1.0.0",
+  "description": "hello world",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "hello",
+    "world",
+    "express"
+  ],
+  "author": "Erno",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
+}

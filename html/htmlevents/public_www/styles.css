@@ -1,0 +1,20 @@
+.normal {
+	background-color:#0E4ABB;
+	color:#000000;
+	padding:40px;
+	text-align:center;
+}
+
+.clicked {
+	background-color:#FF432A;
+	color:#000000;
+	padding:40px;
+	text-align:center;
+}
+
+.hover {
+	background-color:#7604BF;
+	color:#000000;
+	padding:40px;
+	text-align:center;
+}
