@@ -1,0 +1,21 @@
+<div>
+	<button (click)="getList()">Get List</button>
+	<table>
+		<thead>
+			<tr>
+				<th>Type</th>
+				<th>Count</th>
+				<th>Price</th>
+				<th>Remove</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr *ngFor="let item of shoppingitems; let idx = index">
+				<td>{{item.type}}</td>
+				<td>{{item.count}}</td>
+				<td>{{item.price}}</td>
+				<td><button (click)="remove(idx)">Remove</button></td>
+			</tr>
+		</tbody>
+	</table>
+</div>

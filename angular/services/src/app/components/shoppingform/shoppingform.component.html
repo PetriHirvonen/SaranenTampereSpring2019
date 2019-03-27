@@ -1,0 +1,26 @@
+<div>
+	<form (ngSubmit)="addToList()" #shoppingForm="ngForm">
+		<label for="type">Item type</label>
+		<input name="type" 
+		       type="text" 
+			   required 
+			   [(ngModel)]="shoppingitem.type"/>
+		<br/>
+		<label for="price">Price</label>
+		<input name="price" 
+			   type="number" 
+			   required 
+			   minimum="0.0"
+			   step="0.01"
+			   [(ngModel)]="shoppingitem.price"/>
+		<br/>
+		<label for="count">Count</label>
+		<input name="count" 
+			   type="number" 
+			   required 
+			   minimum="0"
+			   [(ngModel)]="shoppingitem.count"/>
+		<br/>
+		<input type="submit" value="Submit"/>
+	</form>
+</div>
