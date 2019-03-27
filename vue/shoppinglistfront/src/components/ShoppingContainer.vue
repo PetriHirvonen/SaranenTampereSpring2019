@@ -2,6 +2,7 @@
 	<div>
 		<ShoppingForm @add-to-list="addToList(...arguments)"/>
 		<hr/>
+		<ShoppingList v-bind:list="list" @remove-item="removeFromList(...arguments)"/>
 	</div>
 </template>
 <script>
@@ -18,6 +19,9 @@ export default {
 		return {
 			list:[]
 		}
+	},
+	created: function() {
+		this.getShoppingList();
 	},
 	methods: {
 		getShoppingList:function() {
@@ -49,7 +53,8 @@ export default {
 				body:JSON.stringify(item)
 			}
 			fetch("/api/shoppinglist",request).then(response => {				
-				if(response.ok) {				
+				if(response.ok) {
+					this.getShoppingList();
 					response.json().then(data => {
 						//WHEN EVERYTHING GOES RIGHT!
 						console.log(data);
@@ -63,9 +68,29 @@ export default {
 				console.log(error);
 			});		
 		
-		}
-	
-	
+		},
+		removeFromList: function(id) {
+			let request = {
+				method:"DELETE",
+				mode:"cors",
+				headers:{"Content-type":"application/json"}				
+			}
+			fetch("/api/shoppinglist/"+id,request).then(response => {				
+				if(response.ok) {
+					this.getShoppingList();
+					response.json().then(data => {
+						//WHEN EVERYTHING GOES RIGHT!
+						console.log(data);
+					}).catch((error) => {
+						console.log(error);
+					});					
+				} else {
+					console.log("Not ok:"+response.status);
+				}				
+			}).catch((error) => {
+				console.log(error);
+			});				
+		}	
 	}
 }
 </script>
