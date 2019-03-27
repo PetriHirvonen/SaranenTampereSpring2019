@@ -38,6 +38,6 @@ app.delete("/api/shoppinglist/:id", function(req,res) {
 	}
 	res.status(404).json({"message":"not found"});
 });
-app.listen(8080);
+app.listen(3000);
 
-console.log("Running in port 8080");
+console.log("Running in port 3000");
