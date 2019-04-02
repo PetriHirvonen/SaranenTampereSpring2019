@@ -22,11 +22,26 @@ class App extends Component {
 		  id:tempId
 	  })
   }  
+  
+  remove = (id) => {
+	  let tempList = [];
+	  let tempId = parseInt(id,10);
+	  for(let i=0;i<this.state.list.length;i++) {
+			if(this.state.list[i].id !== tempId) {
+				tempList.push(this.state.list[i]);
+			}				
+	  }
+	  this.setState({
+		  list:tempList
+	  })
+  }
   render() {
     return (
       <div className="App">
 		<ShoppingForm addToList={this.addToList}/>
-		<ShoppingList list={this.state.list}/>
+		<hr/>
+		<ShoppingList list={this.state.list}
+					  removeFromList={this.remove}/>
       </div>
     );
   }
