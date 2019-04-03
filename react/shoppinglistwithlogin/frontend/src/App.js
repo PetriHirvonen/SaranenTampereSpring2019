@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import ShoppingList from './components/ShoppingList';
 import ShoppingForm from './components/ShoppingForm';
+import LoginForm from './components/LoginForm';
 import NavBar from './components/NavBar';
 import {Switch,Route,Redirect} from 'react-router-dom';
 
@@ -10,15 +11,69 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state= {
-			list:[]
+			list:[],
+			isLogged:false,
+			token:""
 		}
 	 }
+	 
+	 //LOGIN API
+	 
+	 register = (user) => {
+		let request = {
+			method:"POST",
+			mode:"cors",
+			headers:{"Content-type":"application/json"},
+			body:JSON.stringify(user)				
+		}
+		fetch("/register",request).then(response => {
+			if(response.ok) {
+				alert("Register success");
+			} else {
+				alert("Register failed");
+			}
+		}).catch(error => {
+			console.log(error);
+		}); 
+	 }
+	 
+	 login = (user) => {
+		 let request = {
+			method:"POST",
+			mode:"cors",
+			headers:{"Content-type":"application/json"},
+			body:JSON.stringify(user)			 
+		 }
+		 fetch("/login",request).then(response => {
+			if(response.ok) {
+				response.json().then(data => {
+					this.setState({
+						isLogged:true,
+						token:data.token
+					},() => {
+						this.getList();
+					});
+				}).catch(error => {
+					console.log(error);
+				});
+			} else {
+				console.log("Login failed: reason:"+response.status);
+			} 				
+		 }).catch(error => {
+			 console.log(error);
+		 });
+		 
+	 }
+	 
+	 
+	 //SHOPPINGLIST API
 	 
 	 getList = () => {
 		 let request = {
 			method:"GET",
 			mode:"cors",
-			headers:{"Content-type":"application/json"}
+			headers:{"Content-type":"application/json",
+					 "token":this.state.token}
 		 }
 		 fetch("/api/shoppinglist",request).then(response => {
 			if(response.ok) {
@@ -38,15 +93,13 @@ class App extends Component {
 		 });	 
 	 }
 	 
-	 componentDidMount() {
-		 this.getList();
-	 }
 
 	addToList = (item) =>  {
 		 let request = {
 			method:"POST",
 			mode:"cors",
-			headers:{"Content-type":"application/json"},
+			headers:{"Content-type":"application/json",
+					 "token":this.state.token},
 			body:JSON.stringify(item)
 		 }
 		 fetch("/api/shoppinglist",request).then(response => {
@@ -66,20 +119,11 @@ class App extends Component {
   }  
   
 	remove = (id) => {
-	  /*let tempList = [];
-	  let tempId = parseInt(id,10);
-	  for(let i=0;i<this.state.list.length;i++) {
-			if(this.state.list[i].id !== tempId) {
-				tempList.push(this.state.list[i]);
-			}				
-	  }
-	  this.setState({
-		  list:tempList
-	  })*/
 	   let request = {
 			method:"DELETE",
 			mode:"cors",
-			headers:{"Content-type":"application/json"}
+			headers:{"Content-type":"application/json",
+					 "token":this.state.token}
 		 }
 		 fetch("/api/shoppinglist/"+id,request).then(response => {
 			if(response.ok) {
@@ -96,13 +140,18 @@ class App extends Component {
 			console.log(error); 
 		 });	 
   }
+  
   render() {
     return (
       <div className="App">
-		<NavBar/>
+		<NavBar isLogged={this.state.isLogged}/>
 		<hr/>
 		<Switch>
 			<Route exact path="/" render={() => (
+				<LoginForm onRegister={this.register}
+				           onLogin={this.login}/>
+			)}/>
+			<Route path="/list" render={() => (
 				<ShoppingList list={this.state.list}
 					removeFromList={this.remove}/>
 			)}/>
