@@ -43,13 +43,6 @@ class App extends Component {
 	 }
 
 	addToList = (item) =>  {
-	  /*item.id = this.state.id;
-	  let tempId = this.state.id+1;
-	  let tempArray =  this.state.list.concat(item);
-	  this.setState({
-		  list:tempArray,
-		  id:tempId
-	  })*/
 		 let request = {
 			method:"POST",
 			mode:"cors",
