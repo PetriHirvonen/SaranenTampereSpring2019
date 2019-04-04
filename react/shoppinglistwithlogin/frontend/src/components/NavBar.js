@@ -9,6 +9,7 @@ export default class NavBar extends React.Component {
 				<ul style={{listStyleType:"none"}}>
 					<li><Link to="/list">Shopping List</Link></li>
 					<li><Link to="/form">Add to List</Link></li>
+					<li><Link to="/" onClick={this.props.logout}>Logout</Link></li>
 				</ul>
 			)
 		} else {

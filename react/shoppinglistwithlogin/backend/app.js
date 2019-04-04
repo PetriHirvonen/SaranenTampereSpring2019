@@ -106,6 +106,17 @@ app.post("/login",function(req,res) {
 	return res.status(403).json({"message":"forbidden"});	
 });
 
+app.post("/logout",function(req,res) {
+	let token = req.headers.token;
+	for(let i=0;i<loggedUsers.length;i++) {
+		if(token === loggedUsers[i].token) {
+			loggedUsers.splice(i,1);
+			return res.status(200).json({"message":"success"});
+		}
+	}
+	return res.status(404).json({"message":"not found"});	
+});
+
 app.use("/api",isUserLogged,apiRouter);
 
 let port = 3001;

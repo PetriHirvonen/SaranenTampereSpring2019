@@ -4,7 +4,7 @@ import ShoppingList from './components/ShoppingList';
 import ShoppingForm from './components/ShoppingForm';
 import LoginForm from './components/LoginForm';
 import NavBar from './components/NavBar';
-import {Switch,Route,Redirect} from 'react-router-dom';
+import {Switch,Route,Redirect,withRouter} from 'react-router-dom';
 
 class App extends Component {
 	
@@ -15,6 +15,25 @@ class App extends Component {
 			isLogged:false,
 			token:""
 		}
+	 }
+	 
+	 //SESSIONSTORAGE API
+	 
+	 saveToStorage = () => {
+		 sessionStorage.setItem("state",JSON.stringify(this.state));
+	 }
+	 
+	 getFromStorage = () => {
+		 if(sessionStorage.getItem("state")) {
+			let state = JSON.parse(sessionStorage.getItem("state"));
+			this.setState(state);
+		 }
+	 }
+	 
+	 //LIFECYCLE FUNCTION
+	 
+	 componentDidMount() {
+		 this.getFromStorage();
 	 }
 	 
 	 //LOGIN API
@@ -52,6 +71,7 @@ class App extends Component {
 						token:data.token
 					},() => {
 						this.getList();
+						this.saveToStorage();
 					});
 				}).catch(error => {
 					console.log(error);
@@ -65,28 +85,71 @@ class App extends Component {
 		 
 	 }
 	 
+	 logout = () => {
+		 let request = {
+			method:"POST",
+			mode:"cors",
+			headers:{"Content-type":"application/json",
+					 "token":this.state.token}	 
+		 }
+		 fetch("/logout",request).then(response => {
+			if(response.ok) {
+				response.json().then(data => {
+					this.setState({
+						isLogged:false,
+						token:"",
+						list:[]
+					},() => {
+						this.saveToStorage();
+					});
+				}).catch(error => {
+					console.log(error);
+				});
+			} else {
+				console.log("Logout failed: reason:"+response.status);
+			} 				
+		 }).catch(error => {
+			 console.log(error);
+		 });
+		 		 
+	 }
+	 
 	 
 	 //SHOPPINGLIST API
 	 
-	 getList = () => {
+	 getList = (query) => {
+		 let url = "/api/shoppinglist";
+		 if(query) {
+			 url = url+"?type="+query;
+		 }
 		 let request = {
 			method:"GET",
 			mode:"cors",
 			headers:{"Content-type":"application/json",
 					 "token":this.state.token}
 		 }
-		 fetch("/api/shoppinglist",request).then(response => {
+		 fetch(url,request).then(response => {
 			if(response.ok) {
 				response.json().then(data => {
-					console.log(data);
+					console.log(data);	
 					this.setState({
 						list:data
-					})
+					}, () => {
+						this.saveToStorage();
+					});
 				}).catch(error => {
 					console.log(error);
 				})				
 			} else {
 				console.log("Fetching list not ok:"+response.status);
+				if(response.status === 403) {
+					alert("Session invalidated. Login again");
+					this.setState({
+						isLogged:false,
+						token:"",
+						list:[]
+					})
+				}
 			}
 		 }).catch(error => {
 			console.log(error); 
@@ -107,11 +170,20 @@ class App extends Component {
 				response.json().then(data => {
 					console.log(data);
 					this.getList();
+					this.props.history.push("/list");
 				}).catch(error => {
 					console.log(error);
 				})				
 			} else {
-				console.log("Fetching list not ok:"+response.status);
+				console.log("adding to list not ok:"+response.status);
+				if(response.status === 403) {
+					alert("Session invalidated. Login again");
+					this.setState({
+						isLogged:false,
+						token:"",
+						list:[]
+					})
+				}
 			}
 		 }).catch(error => {
 			console.log(error); 
@@ -134,29 +206,79 @@ class App extends Component {
 					console.log(error);
 				})				
 			} else {
-				console.log("Fetching list not ok:"+response.status);
+				console.log("removing list not ok:"+response.status);
+				if(response.status === 403) {
+					alert("Session invalidated. Login again");
+					this.setState({
+						isLogged:false,
+						token:"",
+						list:[]
+					})
+				}
 			}
 		 }).catch(error => {
 			console.log(error); 
 		 });	 
   }
   
+  editItem = (item) => {
+		let request = {
+			method:"PUT",
+			mode:"cors",
+			headers:{"Content-type":"application/json",
+					 "token":this.state.token},
+			body:JSON.stringify(item)
+		 }
+		 fetch("/api/shoppinglist/"+item.id,request).then(response => {
+			if(response.ok) {
+				response.json().then(data => {
+					console.log(data);
+					this.getList();
+				}).catch(error => {
+					console.log(error);
+				})				
+			} else {
+				console.log("removing list not ok:"+response.status);
+				if(response.status === 403) {
+					alert("Session invalidated. Login again");
+					this.setState({
+						isLogged:false,
+						token:"",
+						list:[]
+					})
+				}
+			}
+		 }).catch(error => {
+			console.log(error); 
+		 });	 	  
+	  
+  }
+  
   render() {
     return (
       <div className="App">
-		<NavBar isLogged={this.state.isLogged}/>
+		<NavBar isLogged={this.state.isLogged}
+		        logout={this.logout}/>
 		<hr/>
 		<Switch>
 			<Route exact path="/" render={() => (
-				<LoginForm onRegister={this.register}
-				           onLogin={this.login}/>
+				this.state.isLogged ?
+				(<Redirect to="/list"/>):				
+				(<LoginForm onRegister={this.register}
+				           onLogin={this.login}/>)
 			)}/>
 			<Route path="/list" render={() => (
-				<ShoppingList list={this.state.list}
-					removeFromList={this.remove}/>
+				this.state.isLogged ?
+				(<ShoppingList list={this.state.list}
+					removeFromList={this.remove}
+					searchList={this.getList}
+					editList={this.editItem}/>):
+				(<Redirect to="/"/>)
 			)}/>
 			<Route path="/form" render={() => (
-				<ShoppingForm addToList={this.addToList}/>		
+				this.state.isLogged ?
+				(<ShoppingForm addToList={this.addToList}/>):
+				(<Redirect to="/"/>)
 			)}/>
 			<Route render={() => (<Redirect to="/"/>)}/>
 		</Switch>
@@ -166,4 +288,4 @@ class App extends Component {
   }
 }
 
-export default App;
+export default withRouter(App);
